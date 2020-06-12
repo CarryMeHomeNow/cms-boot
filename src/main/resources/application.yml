@@ -1,0 +1,51 @@
+server:
+    port: 8080
+    servlet:
+        context-path: /cms
+
+
+spring:
+    aop:
+        proxy-target-class: true
+        
+    devtools:
+        livereload:
+            enabled: true
+            
+    jackson:
+        time-zone: Asia/Shanghai
+        serialization: 
+            WRITE_DATES_AS_TIMESTAMPS: true
+      
+    servlet:
+        multipart:
+            enabled: true
+            max-file-size: 20MB
+            max-request-size: 100MB
+            
+    profiles:
+        include:
+            - swagger
+        
+        
+#shiro配置
+shiro:
+    loginUrl: /shiro/noLogin
+    unauthorizedUrl: /shiro/unauthorized
+    
+    
+#自定义属性
+cheejee:
+    cms:
+        avatar-path: ${user.home}/cms/avatar/
+        avatar-extension: .gif, .jpeg, .png, .jpg
+        attach-path: ${user.home}/cms/attach/
+        
+        
+        
+        
+        
+        
+        
+        
+        

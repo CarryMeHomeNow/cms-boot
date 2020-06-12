@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cheejee.cms.dao.ResourceDAO">
+
+    <select id="selectResource" resultType="resource">
+        SELECT * FROM resource 
+        WHERE id=#{id}
+    </select>
+    
+    <select id="selectResourceNameCount" resultType="_int">
+        SELECT COUNT(*) FROM resource
+        WHERE name=#{name}
+    </select>
+    
+    <select id="selectResourceByNaemEx" resultType="resource">
+        SELECT * FROM resource
+        WHERE name=#{name}
+    </select>
+    
+    <select id="selectResourceByName" resultType="resource">
+        SELECT * FROM resource
+        WHERE name 
+        LIKE CONCAT(#{name}, '%')
+    </select>
+    
+    <select id="selectResourceByDesName" resultType="resource">
+        SELECT * FROM resource
+        WHERE des_name 
+        LIKE CONCAT(#{desName}, '%')
+    </select>
+    
+    <select id="listResource" resultType="resource">
+        SELECT * FROM resource
+    </select>
+    
+    <insert id="addResource" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO resource
+        VALUES
+        <foreach collection="resource" item="r" separator=",">
+            (null, #{r.name}, #{r.desName}, #{r.describe})
+        </foreach>
+    </insert>
+    
+    <delete id="deleteResource">
+        DELETE FROM resource 
+        WHERE id=#{id}
+    </delete>
+    
+    <update id="updateResource">
+        UPDATE resource
+        <set>
+        <if test="desName != null">des_name=#{desName},</if> 
+        <if test="describe != null">`describe`=#{describe}</if>
+        </set>
+        WHERE id=#{id}
+    </update>
+</mapper>

@@ -1,0 +1,69 @@
+#swagger配置
+swagger:
+    enabled: true
+    title: CMS-API
+    description: 文档描述
+    version: 1.0
+    contact:
+        name: CARRY ME HOME
+        email: 1515785639@qq.com
+    base-package: com.cheejee.cms
+    base-path: /**
+    exclude-path: /error, /static/**, /shiro/**
+    apply-default-response-messages: false
+    ui-config:        operations-sorter: method
+    docket:        foreground:
+            base-package: com.cheejee.cms.controller.fore
+            exclude-path: /error, /static/**, /shiro/**, /admin/**
+            description: 前台api，提供普通用户使用的api
+        background:
+            base-package: com.cheejee.cms.controller.back
+            description: 后台api，提供系统管理员使用的api。访问这些接口需要使用者拥有管理员角色。
+    global-response-message:
+        post:
+            - 
+              code: 400
+              message: 一般错误，具体看返回的错误信息。
+            - 
+              code: 401
+              message: 权限不足
+            - 
+              code: 409
+              message: 程序抛出了意料之外的异常，虽然异常被捕捉到了但是没有具体的处理方法。
+            - 
+              code: 500
+              message: 出大问题了呀
+        put:
+            - 
+              code: 400
+              message: 一般错误，具体看返回的错误信息。
+            - 
+              code: 401
+              message: 权限不足
+            - 
+              code: 409
+              message: 程序抛出了意料之外的异常，虽然异常被捕捉到了但是没有具体的处理方法。
+            - 
+              code: 500
+              message: 出大问题了呀
+        get:
+            - 
+              code: 401
+              message: 用户未登录或者当前用户权限不足
+            - 
+              code: 409
+              message: 程序抛出了意料之外的异常，虽然异常被捕捉到了但是没有具体的处理方法。
+            - 
+              code: 500
+              message: 出大问题了呀
+        delete:
+            - 
+              code: 401
+              message: 权限不足
+            - 
+              code: 409
+              message: 程序抛出了意料之外的异常，虽然异常被捕捉到了但是没有具体的处理方法。
+            - 
+              code: 500
+              message: 出大问题了呀
+        

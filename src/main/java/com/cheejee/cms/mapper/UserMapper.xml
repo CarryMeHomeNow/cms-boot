@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.cheejee.cms.dao.UserDAO">
+    
+    <resultMap type="user" id="userMap">
+        <id column="id" property="id"/>
+        <result property="password" column=""/>
+        <association property="personalInfo" select="com.cheejee.cms.dao.PersonalInfoDAO.selectPersonalInfo" column="id"></association>
+        <collection property="categorys" select="com.cheejee.cms.dao.CategoryDAO.selectCategoryByUser" column="id" ofType="category"></collection>
+        <collection property="contents" select="com.cheejee.cms.dao.ContentDAO.selectContentForUser" column="id" ofType="content"></collection>
+        <collection property="roles" select="com.cheejee.cms.dao.RoleDAO.selectRoleByUser" column="id" ofType="role"></collection>
+        <collection property="groups" select="com.cheejee.cms.dao.GroupDAO.selectGroupByUser" column="id" ofType="group"></collection>
+    </resultMap> 
+    
+    <select id="selectPassword" resultType="string">
+    	SELECT user.password FROM user WHERE name=#{name}
+    </select>
+
+    <select id="selectUser" resultMap="userMap">
+        SELECT * FROM user WHERE id=#{id}
+    </select>
+    
+    <select id="selectCountByNameAndPass" resultType="_int">
+        SELECT COUNT(*) FROM user 
+        WHERE name=#{name} AND password=#{password}
+    </select>
+    
+    <select id="selectUserByName" resultMap="userMap">
+        SELECT * FROM user WHERE name LIKE CONCAT(#{name}, '%')
+    </select>
+    
+    <select id="selectUserByNameExact" resultMap="userMap">
+        SELECT * FROM user WHERE name=#{name}
+    </select>
+    
+    <select id="selectUserNameCount" resultType="_int">
+        SELECT COUNT(*) FROM user WHERE name=#{name}
+    </select>
+    
+    <select id="selectUserNameCountExSelf" resultType="_int">
+        SELECT COUNT(*) FROM user WHERE name=#{name} AND id!=#{id}
+    </select>
+    
+    <select id="selectUserByState" resultMap="userMap">
+        SELECT * FROM user WHERE state=#{state}
+    </select>
+    
+    <select id="selectUserByRole" resultMap="userMap">
+        SELECT * FROM user u
+        LEFT JOIN r_user_role r
+        ON r.user_id=u.id
+        WHERE r.role_id=#{id}
+    </select>
+    
+    <select id="selectUserForZone" resultMap="userMap">
+        SELECT u.id as id, u.name as name, u.p_name as pName
+        FROM user u JOIN r_user_zone r ON u.id = r.admin_id
+        WHERE r.zone_id=#{id}
+    </select>  
+    
+    <select id="selectAdminByGroup" resultMap="userMap">
+        SELECT u.* FROM user u
+        JOIN r_group_admin r
+        ON r.user_id=u.id
+        JOIN `group` g
+        ON r.group_id=g.id
+        WHERE g.id=#{id}
+    </select>
+    
+    <select id="selectUserByGroup" resultMap="userMap">
+        SELECT u.* FROM user u
+        JOIN r_group_user r
+        ON r.user_id=u.id
+        JOIN `group` g
+        ON r.group_id=g.id
+        WHERE g.id=#{id}
+    </select>
+    
+    <select id="selectAllAdmin" resultMap="userMap">
+    	SELECT u.* FROM user u
+    	RIGHT JOIN admin a
+    	ON u.id=a.user_id
+    </select>
+    
+    <select id="checkIsAdmin" resultType="_int">
+        SELECT count(*) FROM admin WHERE user_id=#{id}
+    </select>
+    
+    <select id="listUser" resultMap="userMap">
+        SELECT * FROM user 
+    </select>
+    
+    <insert id="addUser" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO user(name, password)
+        VALUES(#{name}, #{password})
+    </insert>
+    
+    <insert id="addUserRoles">
+        INSERT INTO r_user_role VALUES
+        <foreach collection="roles" item="r" separator=",">
+            (#{user.id}, #{r.id})
+        </foreach>
+    </insert>
+    
+    <delete id="deleteUserRoles">
+        DELETE FROM r_user_role
+        WHERE user_id=#{user.id}
+        AND role_id 
+        IN
+        <foreach collection="roles" item="r" open="(" close=")" separator=",">
+            #{r.id}
+        </foreach>
+    </delete>
+    
+    <delete id="deleteUserRoleAll">
+        DELETE FROM r_user_role WHERE user_id=#{user.id} 
+    </delete>   
+    
+    <delete id="deleteUser">
+        DELETE FROM user WHERE id=#{id}
+    </delete>
+    
+    <update id="updateUser">
+        UPDATE user 
+        <set>
+            <if test="state != null">state=#{state},</if>
+            <if test="state == null">name=user.name</if>
+        </set>
+            WHERE id=#{id}
+    </update>
+    
+    <update id="updateUserPass">
+        UPDATE user
+        SET password=#{password}
+    </update>
+    
+    <insert id="addAdmin">
+        INSERT INTO admin VALUES
+        <foreach collection="users" item="u" separator=",">
+            (#{u.id})
+        </foreach>
+    </insert>
+
+    <delete id="deleteAdmin">
+        DELETE FROM admin WHERE user_id IN
+        <foreach collection="users" close=")" item="u" open="(" separator=",">
+            #{u.id}
+        </foreach>
+    </delete>
+</mapper>

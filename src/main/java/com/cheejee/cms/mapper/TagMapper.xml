@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cheejee.cms.dao.TagDAO">
+
+    <resultMap type="tag" id="tagMap">
+        <id column="id" property="id"/>
+        <collection property="contents" column="id" ofType="content" select="com.cheejee.cms.dao.ContentDAO.selectContentForTag"></collection>
+    </resultMap>
+
+    <select id="selectTag" resultMap="tagMap">
+        SELECT * FROM tag WHERE id=#{id}
+    </select>
+    
+    <select id="selectTagForName" resultMap="tagMap">
+        SELECT * FROM tag WHERE name LIKE CONCAT(#{name}, '%')
+    </select>
+    
+    <select id="selectTagByNameEx" resultMap="tagMap">
+        SELECT * FROM tag WHERE name=#{name}
+    </select>
+    
+    <select id="listTag" resultMap="tagMap">
+        SELECT * FROM tag
+    </select>
+    
+    <select id="selectTagForContent" resultMap="tagMap">
+        SELECT t.* FROM r_content_tag r
+        JOIN tag t
+        ON r.tag_id = t.id
+        WHERE r.content_id =#{id} 
+    </select>
+    
+    <select id="selectTagNameCount" resultType="_int">
+        SELECT COUNT(*) FROM tag WHERE name=#{name}
+    </select>
+    
+    <select id="selectTagNameCountExSelf" resultType="_int">
+        SELECT COUNT(*) FROM tag WHERE name=#{name} AND id!=#{id}
+    </select>
+    
+    <insert id="addTags" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO tag(name, `describe`) VALUES
+        <foreach collection="tags" item="t" separator=",">
+            (#{t.name}, #{t.describe})
+        </foreach>
+    </insert>
+    
+    <delete id="deleteTagRelate">
+        DELETE FROM r_content_tag WHERE tag_id IN
+        <foreach collection="tags" close=")" item="t" open="(">
+            #{t.id}
+        </foreach>
+    </delete>
+
+    <delete id="deleteTag">
+        DELETE FROM tag WHERE id=#{id}
+    </delete>
+    
+    <update id="updateTag">
+        UPDATE tag 
+        <set> 
+        <if test="describe != null">`describe`=#{describe}, </if>
+        <if test="contentCount != null">content_count=#{contentCount}</if> 
+        </set>
+        WHERE id=#{id}
+    </update>
+</mapper>

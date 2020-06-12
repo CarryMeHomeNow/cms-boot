@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cheejee.cms.dao.ZoneDAO">
+
+    <resultMap type="zone" id="zoneMap">
+        <id column="id" property="id"/>
+        <association property="creator" column="creator_id" javaType="user" select="com.cheejee.cms.dao.UserDAO.selectUser"></association>
+        <collection property="admins" ofType="user" column="id" select="com.cheejee.cms.dao.UserDAO.selectUserForZone"></collection>
+        <collection property="contents" ofType="content" column="id" select="com.cheejee.cms.dao.ContentDAO.selectContentForZone"></collection>
+    </resultMap>
+    
+    <select id="selectZone" resultMap="zoneMap">
+        SELECT * FROM zone WHERE id=#{id}
+    </select>
+    
+    <select id="selectZoneByName" resultMap="zoneMap">
+        SELECT * FROM zone WHERE name LIKE CONCAT(#{name}, '%')
+    </select>
+    
+    <select id="selectZoneByCreator" resultMap="zoneMap">
+        SELECT * FROM zone 
+        WHERE creator_id=#{user.id}
+    </select>
+    
+    <select id="selectCountByName" resultType="_int">
+        SELECT COUNT(*) FROM zone 
+        WHERE name=#{name} 
+    </select>
+    
+    <select id="selectCountByNameAndCreatorNoSelf" resultType="_int">
+        SELECT COUNT(*) FROM zone 
+        WHERE name=#{name} 
+        AND creator_id=#{creator.id}
+        AND id!=#{id}
+    </select>
+    
+    <select id="listZone" resultMap="zoneMap">
+        SELECT * FROM zone
+    </select>
+    
+    <select id="selectZoneForUser" resultMap="zoneMap">
+        SELECT z.*
+        FROM zone z 
+        JOIN r_user_zone r
+        ON z.id=r.zone_id
+        WHERE r.admin_id=#{id}
+    </select>
+    
+    <select id="selectZoneForContent" resultMap="zoneMap">
+        SELECT z.*
+        FROM zone z
+        JOIN r_content_zone r
+        ON z.id=r.zone_id
+        WHERE r.content_id=#{id}
+    </select>
+    
+    <insert id="addZone" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO zone VALUES(null, #{name}, #{describe}, #{creator.id})
+    </insert>
+    
+    <insert id="addAdmins">
+        INSERT INTO r_user_zone VALUES
+           <foreach collection="admins" item="u" separator=",">
+                (#{u.id}, #{zone.id})
+           </foreach>
+    </insert>  
+    
+    <insert id="addContentToZone" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO r_content_zone
+        VALUES
+        <foreach collection="content" item="c" separator=",">
+            (#{c.id}, #{zone.id})
+        </foreach>
+    </insert>
+    
+    <delete id="deleteContentToZone">
+        DELETE FROM r_content_zone
+        WHERE zone_id-=#{zone.id}
+        AND content_id 
+        INT
+        <foreach collection="content" item="c" close=")" open="(" separator=",">
+            #{c.id}
+        </foreach>
+    </delete>
+    
+    <delete id="deleteContentToZoneAll">
+        DELETE FROM r_content_zone 
+        WHERE zone_id
+        IN
+        <foreach collection="zone" close=")" item="z" open="(" separator=",">
+           #{z.id}
+        </foreach>
+    </delete>
+    
+    <delete id="reduceAdmins">
+        DELETE FROM r_user_zone 
+        WHERE zone_id = #{zone.id}
+        AND admin_id
+        IN
+        <foreach collection="admins" item="a" close=")" open="(" separator=",">
+            #{a.id}
+        </foreach>
+    </delete>
+    
+    <delete id="reduceAdminsAll">
+        DELETE FROM r_user_zone WHERE zone_id = #{zone.id}
+    </delete>
+    
+    <delete id="deleteZone">
+        DELETE FROM zone WHERE id=#{id}
+    </delete>
+    
+    <update id="updateZone">
+        UPDATE zone 
+        <set> 
+            <if test="name != null">name=#{name}, </if>
+            <if test="describe != null">`describe`=#{describe}</if> 
+        </set>
+        WHERE id=#{id}
+    </update>
+</mapper>

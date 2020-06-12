@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cheejee.cms.dao.NoticeDAO">
+
+    <resultMap type="notice" id="noticeMap">
+        <id column="id" property="id"/>
+        <association property="creator" column="user_id" select="com.cheejee.cms.dao.UserDAO.selectUser"></association>
+    </resultMap>
+
+    <select id="selectNotice" resultMap="noticeMap">
+        SELECT * FROM notice WHERE id=#{id}
+    </select>
+    
+    <select id="selectNoticeByUser" resultMap="noticeMap">
+        SELECT * FROM notice 
+        WHERE user_id=#{user.id}
+    </select>
+    
+    <select id="selectNoticeByState" resultMap="noticeMap">
+        SELECT * FROM notice WHERE state=#{state}
+    </select>
+    
+    <select id="listNotice" resultMap="noticeMap">
+        SELECT * FROM notice 
+    </select>
+    
+    <select id="selectNoticeByTime" resultMap="noticeMap">
+        SELECT * FROM notice 
+        WHERE add_time
+        BETWEEN #{begin}
+        AND #{end} 
+    </select>
+    
+    <insert id="addNotice" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO notice 
+        (title, text, state, user_id)
+        VALUES(#{title}, #{text}, #{state}, #{creator.id})
+    </insert>
+    
+    <delete id="deleteNotice">
+        DELETE FROM notice WHERE id=#{id}
+    </delete>
+    
+    <update id="updateNotice">
+        UPDATE notice
+        SET title=#{title}, text=#{text}, state=#{state}
+        WHERE id=#{id}
+    </update>
+</mapper>

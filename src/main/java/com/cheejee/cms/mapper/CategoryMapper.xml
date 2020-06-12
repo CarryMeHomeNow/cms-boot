@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cheejee.cms.dao.CategoryDAO">
+
+    <resultMap type="category" id="categoryMap">
+        <id column="id" property="id"/>
+        <association property="user" column="user_id" select="com.cheejee.cms.dao.UserDAO.selectUser"></association>
+        <collection property="contents" column="id" ofType="content" select="com.cheejee.cms.dao.ContentDAO.selectContentForCategory"></collection>
+    </resultMap>
+
+    <select id="selectCategory" resultMap="categoryMap">
+        SELECT * FROM category WHERE id=#{id}
+    </select>
+
+    <select id="selectCategoryByIdAndUser" resultMap="categoryMap">
+        SELECT * FROM category WHERE id=#{id} AND user_id=#{user.id}
+    </select>
+    
+    <select id="selectCategoryByName" resultMap="categoryMap">
+        SELECT * FROM category WHERE name LIKE CONCAT(#{name}, '%')
+    </select>
+    
+    <select id="selectCategoryByNameAndUser" resultMap="categoryMap">
+        SELECT * FROM category 
+        WHERE name 
+        LIKE CONCAT(#{name}, '%')
+        AND user_id=#{user.id}
+    </select>
+    
+    <select id="selectCategoryByUser" resultMap="categoryMap">
+        SELECT * FROM category WHERE user_id=#{user.id}
+    </select>
+
+    <select id="selectCategoryForContent" resultMap="categoryMap">
+        SELECT c.* FROM category c
+        JOIN r_content_category r
+        ON c.id=r.category_id
+        WHERE r.content_id=#{id}
+    </select>
+    
+    <select id="selectCategoryContentCount" resultType="_int">
+        SELECT COUNT(*) FROM r_content_category 
+        WHERE category_id=#{id}
+    </select>
+    
+    <select id="selectCategroyNameCountOnCreater" resultType="_int">
+        SELECT COUNT(*) FROM category WHERE user_id=#{user.id} AND name=#{name}
+    </select>
+    
+    <select id="selectCategroyNameCountOnCreaterExSelf" resultType="_int">
+        SELECT COUNT(*) FROM category WHERE user_id=#{user.id} AND name=#{name} AND id!=#{id}
+    </select>
+    
+    <select id="listCategory" resultMap="categoryMap">
+        SELECT * FROM category 
+    </select>
+    
+    <insert id="addCategory" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO category 
+        VALUES
+        <foreach collection="categorys" item="c" separator=",">
+            (null, #{c.name}, #{c.user.id})        
+        </foreach>
+    </insert>
+   
+    <delete id="deleteCategorys">
+        DELETE FROM category 
+        WHERE id
+        IN
+        <foreach collection="categorys" item="c" separator="," open="(" close=")">
+            #{c.id}
+        </foreach> 
+    </delete>
+   
+    <delete id="deleteCategoryRelate">
+        DELETE FROM r_content_category 
+        WHERE category_id
+        IN
+        <foreach collection="categorys" item="c" separator="," open="(" close=")">
+            #{c.id}
+        </foreach> 
+    </delete>
+    
+    <update id="updateCategory">
+        UPDATE category
+        <set> 
+        <if test="name != null">name=#{name}</if> 
+        </set>
+        WHERE id=#{id}
+    </update>
+
+</mapper>

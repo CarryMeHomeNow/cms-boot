@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.cheejee.cms.dao.RoleDAO">
+
+    <resultMap type="role" id="roleMap">
+        <id column="id" property="id"/>
+        <association property="creator" column="user_id" select="com.cheejee.cms.dao.UserDAO.selectUser"></association>
+        <collection property="permissions" column="id" ofType="permission" select="com.cheejee.cms.dao.PermissionDAO.selectPermissionByRole"></collection>
+        <collection property="users" column="id" ofType="user" select="com.cheejee.cms.dao.UserDAO.selectUserByRole"></collection>
+        <collection property="groups" column="id" ofType="group" select="com.cheejee.cms.dao.GroupDAO.selectGroupByRole"></collection>
+    </resultMap>
+    
+    <select id="selectRole" resultMap="roleMap">
+        SELECT * FROM role WHERE id=#{id}
+    </select>
+    
+    <select id="selectRoleByName" resultMap="roleMap">
+        SELECT * FROM role WHERE name LIKE CONCAT(#{name}, '%')
+    </select>
+    
+    <select id="selectRoleByNameExact" resultMap="roleMap">
+        SELECT * FROM role WHERE name=#{name}
+    </select>
+    
+    <select id="selectRoleNameCount" resultType="_int">
+        SELECT COUNT(*) FROM role WHERE name=#{name}
+    </select>
+    
+    <select id="selectRoleNameCountExSelf" resultType="_int">
+        SELECT COUNT(*) FROM role WHERE name=#{name} AND id!=#{id}
+    </select>
+    
+    <select id="selectRoleByCreator" resultMap="roleMap">
+        SELECT * FROM role WHERE user_id=#{user.id}
+    </select>
+    
+    <select id="selectRoleByUser" resultMap="roleMap">
+        SELECT e.* FROM r_user_role r
+        JOIN role e
+        ON e.id=r.role_id
+        WHERE r.user_id=#{id}
+    </select>
+    
+    <select id="selectRoleByGroup" resultMap="roleMap">
+        SELECT e.* FROM role e
+        JOIN r_group_role r
+        ON r.role_id=e.id
+        WHERE r.group_id=#{id}
+    </select>
+    
+    <select id="listRole" resultMap="roleMap">
+        SELECT * FROM role 
+    </select>
+    
+    <insert id="addRole" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO role VALUES(null, 
+        #{name}, #{describe}, #{creator.id})
+    </insert>
+    
+    <delete id="deleteRole">
+        DELETE FROM role WHERE id=#{id}
+    </delete>
+    
+    <update id="updateRole">
+        UPDATE role
+        <set>
+            <if test="name != null"> name=#{name},</if>
+            <if test="describe != null"> `describe`=#{describe}</if>
+        </set>
+        WHERE id=#{id}
+    </update>
+</mapper>

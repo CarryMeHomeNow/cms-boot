@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cheejee.cms.dao.TypeDAO">
+
+    <resultMap type="type" id="typeMap">
+        <id column="id" property="id"/>
+        <collection property="suffixs" column="id" ofType="suffix" select="com.cheejee.cms.dao.SuffixDAO.selectSuffixForType"></collection>
+    </resultMap>
+
+    <select id="selectType" resultMap="typeMap">
+        SELECT * FROM type WHERE id=#{id}
+    </select>
+    
+    <select id="listType" resultMap="typeMap">
+        SELECT * FROM type
+    </select>
+    
+    <select id="selectTypeByNameExact" resultMap="typeMap">
+        SELECT * FROM type WHERE name=#{name}
+    </select>
+    
+    <select id="selectTypeByName" resultMap="typeMap">
+        SELECT * FROM type WHERE name LIKE CONCAT(#{name}, '%')
+    </select>
+    
+    <select id="selectTypeNameCount" resultType="_int">
+        SELECT COUNT(*) FROM type WHERE name=#{name}
+    </select>
+    
+    <select id="selectTypeNameCountExSelf" resultType="_int">
+        SELECT COUNT(*) FROM type WHERE name=#{name} AND id!=#{id}
+    </select>
+    
+    <select id="selectTypeForSuffix" resultMap="typeMap">
+        SELECT t.* FROM type t
+        JOIN r_suffix_type r
+        ON t.id=r.type_id
+        WHERE r.suffix_id=#{id}
+    </select>
+    
+    <select id="selectTypeCountBySuffix" resultType="_int">
+        SELECT COUNT(*) 
+        FROM r_suffix_type 
+        WHERE suffix_id=#{suffix.id}
+        AND type_id=#{type.id}
+    </select>
+    
+    <insert id="addTypes" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO type(name, `describe`) VALUES
+        <foreach collection="types" item="t" separator=",">
+            (#{t.name}, #{t.describe})
+        </foreach>
+    </insert>
+    
+    <insert id="addTypeSuffixs" >
+        INSERT INTO r_suffix_type VALUES
+        <foreach collection="suffixs" item="s" separator=",">
+            (#{s.id}, #{type.id})
+        </foreach>
+    </insert>
+    
+    <delete id="deleteTypeSuffixsAll">
+        DELETE FROM r_suffix_type WHERE type_id=#{id}
+    </delete>
+    
+    <delete id="deleteTypeSuffixs">
+        DELETE FROM r_suffix_type 
+        WHERE type_id = #{type.id}
+        AND suffix_id in
+        <foreach collection="suffixs" item="s" open="(" separator="," close=")">
+            #{s.id}
+        </foreach>
+    </delete>
+    
+    <delete id="deleteTypes">
+        DELETE FROM type WHERE id IN
+        <foreach collection="types" item="t" open="(" separator="," close=")">
+            #{t.id}
+        </foreach>
+    </delete>
+    
+    <update id="updateType">
+        UPDATE type
+        <set> 
+            <if test="name != null">name=#{name}, </if>
+            <if test="describe != null">`describe`=#{describe},</if> 
+            <if test="state != null">state=#{state}</if>
+        </set>
+        WHERE id=#{id}
+    </update>
+
+</mapper>

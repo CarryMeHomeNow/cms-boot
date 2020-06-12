@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd" >
+
+<configuration>
+
+    <settings>
+        <setting name="lazyLoadingEnabled" value="true"/>
+        <setting name="aggressiveLazyLoading" value="false"/>
+        <setting name="lazyLoadTriggerMethods" value="equals,clone,hashCode"/>
+        <setting name="mapUnderscoreToCamelCase" value="true"/>
+    </settings>
+    
+    <typeAliases>
+        <typeAlias type="com.cheejee.cms.pojo.Attach" alias="attach"/>
+        <typeAlias type="com.cheejee.cms.pojo.Category" alias="category"/>
+        <typeAlias type="com.cheejee.cms.pojo.Content" alias="content"/>
+        <typeAlias type="com.cheejee.cms.pojo.Log" alias="log"/>
+        <typeAlias type="com.cheejee.cms.pojo.Notice" alias="notice"/>
+        <typeAlias type="com.cheejee.cms.pojo.Permission" alias="permission"/>
+        <typeAlias type="com.cheejee.cms.pojo.Resource" alias="resource"/>
+        <typeAlias type="com.cheejee.cms.pojo.Role" alias="role"/>
+        <typeAlias type="com.cheejee.cms.pojo.Setting" alias="setting"/>
+        <typeAlias type="com.cheejee.cms.pojo.Suffix" alias="suffix"/>
+        <typeAlias type="com.cheejee.cms.pojo.Tag" alias="tag"/>
+        <typeAlias type="com.cheejee.cms.pojo.Type" alias="type"/>
+        <typeAlias type="com.cheejee.cms.pojo.User" alias="user"/>
+        <typeAlias type="com.cheejee.cms.pojo.PersonalInfo" alias="personalInfo"/>
+        <typeAlias type="com.cheejee.cms.pojo.Group" alias="group"/>
+        <typeAlias type="com.cheejee.cms.pojo.Zone" alias="zone"/>
+    </typeAliases>
+    
+    <plugins>
+	    <plugin interceptor="com.github.pagehelper.PageInterceptor">
+	        <property name="helperDialect " value="mysql"/>
+	        <property name="reasonable" value="true" />
+	        <property name="pageSizeZero" value="true"/>
+	        <property name="supportMethodsArguments" value="true"/>
+            <property name="params" value="pageNum=pageNumKey;pageSize=pageSizeKey;"/>
+	    </plugin>
+    </plugins>
+    
+    <environments default="envi">
+        <environment id="envi">
+            <transactionManager type="JDBC"></transactionManager>
+            <dataSource type="POOLED">
+                <property name="driver" value="com.mysql.cj.jdbc.Driver"/>
+                <property name="url" value="jdbc:mysql://localhost:3306/cms?serverTimezone=Asia/Shanghai&amp;allowMultiQueries=true"/>
+                <property name="username" value="carry"/>
+                <property name="password" value="home"/>
+            </dataSource>
+        </environment>
+    </environments>
+    
+    <mappers>
+        <mapper resource="com/cheejee/cms/mapper/CategoryMapper.xml"/>    
+        <mapper resource="com/cheejee/cms/mapper/UserMapper.xml"/>    
+        <mapper resource="com/cheejee/cms/mapper/ZoneMapper.xml"/>    
+        <mapper resource="com/cheejee/cms/mapper/ContentMapper.xml"/>    
+        <mapper resource="com/cheejee/cms/mapper/TagMapper.xml"/>    
+        <mapper resource="com/cheejee/cms/mapper/AttachMapper.xml"/>    
+        <mapper resource="com/cheejee/cms/mapper/TypeMapper.xml"/>    
+        <mapper resource="com/cheejee/cms/mapper/SuffixMapper.xml"/>    
+        <mapper resource="com/cheejee/cms/mapper/RoleMapper.xml"/>    
+        <mapper resource="com/cheejee/cms/mapper/GroupMapper.xml"/>    
+        <mapper resource="com/cheejee/cms/mapper/SettingMapper.xml"/>   
+        <mapper resource="com/cheejee/cms/mapper/LogMapper.xml"/>   
+        <mapper resource="com/cheejee/cms/mapper/ResourceMapper.xml"/>   
+        <mapper resource="com/cheejee/cms/mapper/PermissionMapper.xml"/>   
+        <mapper resource="com/cheejee/cms/mapper/NoticeMapper.xml"/>   
+        <mapper resource="com/cheejee/cms/mapper/PersonalInfoMapper.xml"/>   
+    </mappers>
+</configuration>

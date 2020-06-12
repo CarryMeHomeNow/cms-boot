@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cheejee.cms.dao.GroupDAO">
+
+    <resultMap type="group" id="groupMap">
+        <id column="id" property="id"/>
+        <association property="creater" column="user_id" select="com.cheejee.cms.dao.UserDAO.selectUser"></association>
+        <association property="parent" column="parent_id" select="selectGroup"></association>
+        <collection property="sons" column="id" ofType="group" select="selectSons"></collection>
+        <collection property="admins" column="id" ofType="user" select="com.cheejee.cms.dao.UserDAO.selectAdminByGroup"></collection>
+        <collection property="users" column="id" ofType="user" select="com.cheejee.cms.dao.UserDAO.selectUserByGroup"></collection>
+        <collection property="roles" column="id" ofType="role" select="com.cheejee.cms.dao.RoleDAO.selectRoleByGroup"></collection>
+    </resultMap>
+    
+    <select id="selectSons" resultMap="groupMap">
+        SELECT * FROM `group` WHERE parent_id=#{id}
+    </select>
+
+    <select id="selectGroup" resultMap="groupMap">
+        SELECT * FROM `group` WHERE id=#{id}
+    </select>
+    
+    <select id="selectGroupByNameExact" resultMap="groupMap">
+        SELECT * FROM `group` WHERE name=#{name}
+    </select>
+    
+    <select id="selectGroupByName" resultMap="groupMap">
+        SELECT * FROM `group` WHERE name LIKE CONCAT(#{name}, '%')
+    </select>
+    
+    <select id="selectGroupByUser" resultMap="groupMap">
+        SELECT g.* FROM `group` g
+        JOIN r_group_user r
+        ON r.group_id=g.id
+        JOIN user u
+        ON u.id=r.user_id
+        where r.user_id=#{id}
+    </select>
+    
+    <select id="selectGroupByRole" resultMap="groupMap">
+        SELECT g.* FROM `group` g
+        JOIN r_group_role r
+        ON r.group_id=g.id
+        WHERE r.role_id=#{id}
+    </select>
+    
+    <select id="selectGroupNameCount" resultType="_int">
+        SELECT count(*) FROM `group` WHERE name=#{name} AND 
+            <choose>
+                <when test="parent != null">
+                parent_id=#{parent.id}
+                </when>
+                <otherwise>
+                ISNULL(parent_id)
+                </otherwise>
+            </choose>
+    </select>
+    
+    <select id="selectGroupNameCountExSelf" resultType="_int">
+        SELECT count(*) FROM `group` WHERE name=#{name} AND id!=#{id} AND 
+            <choose>
+                <when test="parent != null">
+                parent_id=#{parent.id}
+                </when>
+                <otherwise>
+                ISNULL(parent_id)
+                </otherwise>
+            </choose>
+    </select>
+    
+    <select id="selectGroupNoParent" resultMap="groupMap">
+        SELECT * FROM `group` WHERE ISNULL(parent_id) 
+    </select>
+    
+    <select id="listGroup" resultMap="groupMap">
+        SELECT * FROM `group`
+    </select>
+    
+    <select id="selectCountByGroupSon" resultType="_int">
+        SELECT COUNT(*) 
+        FROM `group`
+        WHERE parent_id=#{id} 
+    </select>
+    
+    <insert id="addGroup" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO `group` 
+        VALUES
+        <foreach collection="groups" separator="," item="g">
+        (null, #{g.name}, #{g.describe}, #{g.parent.id}, #{g.creater.id})
+        </foreach>
+    </insert>
+    
+    <insert id="addGroupRoles">
+        INSERT INTO r_group_role VALUES
+        <foreach collection="roles" item="r" separator=",">
+            (#{group.id}, #{r.id})
+        </foreach>
+    </insert>
+    
+    <insert id="addGroupUsers">
+        INSERT INTO r_group_user VALUES
+        <foreach collection="users" item="u" separator=",">
+            (#{group.id}, #{u.id})
+        </foreach>
+    </insert>
+    
+    <delete id="deleteGroupUserAll">
+        DELETE FROM r_group_user 
+        WHERE group_id=#{id}
+    </delete>
+    
+    <delete id="deleteGroupUsers">
+        DELETE FROM r_group_user WHERE group_id=#{group.id}
+        AND user_id IN
+        <foreach collection="users" item="r" close=")" open="(" separator=",">
+            #{r.id}
+        </foreach>
+    </delete>
+    
+    <delete id="deleteGroupRoles">
+        DELETE FROM r_group_role WHERE group_id=#{group.id}
+        AND role_id IN
+        <foreach collection="roles" item="r" close=")" open="(" separator=",">
+            #{r.id}
+        </foreach>
+    </delete>
+    
+    <delete id="deleteGroupRoleAll">
+        DELETE FROM r_group_role
+        WHERE group_id=#{id}
+    </delete>
+
+    <delete id="deleteGroup">
+        DELETE FROM `group` WHERE id=#{id}
+    </delete>
+    
+    <update id="updateGroup">
+        UPDATE `group` 
+        <set>
+	        <if test="name != null">name=#{name},</if>
+	        <if test="describe != null">`describe`=#{describe},</if>
+	       <choose>
+	           <when test="parent != null">parent_id=#{parent.id}</when>
+	           <otherwise>parent_id=null</otherwise>
+	       </choose> 
+        </set>
+        WHERE id=#{id}
+    </update>
+</mapper>

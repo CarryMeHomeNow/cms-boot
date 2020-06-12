@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cheejee.cms.dao.ContentDAO">
+
+    <resultMap type="content" id="contentMap">
+        <id column="id" property="id"/>
+        <association property="user" column="user_id" select="com.cheejee.cms.dao.UserDAO.selectUser"></association>
+        <collection property="tags" column="id" ofType="tag" select="com.cheejee.cms.dao.TagDAO.selectTagForContent"></collection>
+        <collection property="attachs" column="id" ofType="attach" select="com.cheejee.cms.dao.AttachDAO.selectAttachForContent"></collection>
+        <collection property="categorys" column="id" ofType="category" select="com.cheejee.cms.dao.CategoryDAO.selectCategoryForContent"></collection>
+    </resultMap>
+    
+    <select id="selectContent" resultMap="contentMap">
+        SELECT * FROM content WHERE id=#{id}
+    </select>
+    
+    <select id="selectContentByIdAndUser" resultMap="contentMap">
+        SELECT * FROM content 
+        WHERE id=#{id} 
+        AND user_id=#{user.id}
+    </select>
+    
+    <select id="listContent" resultMap="contentMap">
+        SELECT * FROM content
+    </select>
+    
+    <select id="selectContentByTitle" resultMap="contentMap">
+        SELECT * FROM content WHERE title LIKE CONCAT(#{title}, '%')
+    </select>
+    
+    <select id="searchContent" resultMap="contentMap">
+        SELECT * FROM content 
+        WHERE title 
+        LIKE CONCAT(#{title}, '%')
+        AND state=#{state}
+    </select>
+    
+    
+    
+    <select id="selectContentByTitleAndUser" resultMap="contentMap">
+        SELECT * FROM content 
+        WHERE title LIKE CONCAT(#{title}, '%')
+        AND user_id=#{user.id}
+    </select>
+    
+    <select id="selectContentByState" resultMap="contentMap">
+        SELECT * FROM content WHERE state=#{state}
+    </select>
+    
+    <select id="selectContentForZone" resultMap="contentMap">
+        SELECT c.* 
+        FROM content c JOIN r_content_zone r
+        ON c.id=r.content_id
+        WHERE r.zone_id=#{id}
+    </select>
+    
+    <select id="selectContentForUser" resultMap="contentMap">
+        SELECT * FROM content WHERE user_id=#{id}
+    </select>
+    
+    <select id="selectContentByUserAndState" resultMap="contentMap">
+        SELECT * FROM content WHERE user_id=#{user.id} AND state=#{state}
+    </select>
+    
+    <select id="selectContentByUser" resultMap="contentMap">
+        SELECT * FROM content WHERE user_id=#{user.id}
+    </select>
+    
+    <select id="selectContentForCategory" resultMap="contentMap">
+        SELECT c.* FROM content c
+        JOIN r_content_category r
+        ON r.content_id = c.id 
+        WHERE r.category_id=#{category.id}
+        AND c.user_id=#{user.id}
+    </select>
+    
+    <select id="selectContentForAttach" resultMap="contentMap">
+        SELECT c.* FROM content c
+        JOIN r_content_attach r
+        ON r.content_id=c.id
+        WHERE r.attach_id=#{id}
+    </select>
+    
+    <select id="selectContentForTag" resultMap="contentMap">
+        SELECT c.* FROM content c
+        JOIN r_content_tag r
+        ON r.content_id=c.id
+        WHERE r.tag_id=#{id}
+    </select>
+    
+    <select id="selectContentNoCategory" resultMap="contentMap">
+        SELECT * FROM content
+        WHERE id NOT IN 
+        (SELECT content_id FROM r_content_category)
+        AND user_id=#{user.id}
+    </select>
+    
+    <insert id="addContent" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO content(title, summary, words, state, user_id) 
+        VALUES
+        (#{title}, #{summary}, #{words}, #{state}, #{user.id})
+    </insert>
+    
+    <insert id="addContentTags">
+        INSERT INTO r_content_tag VALUES
+        <foreach collection="tags" separator="," item="t">
+            (#{t.id}, #{content.id})
+        </foreach>;
+        UPDATE tag SET content_count = content_count + 1 WHERE id IN
+        <foreach collection="tags" separator="," item="t" close=")" open="(">
+            #{t.id}
+        </foreach>;
+    </insert>
+    
+    <insert id="addContentZones">
+        INSERT INTO r_content_zone VALUES
+        <foreach collection="zones" separator="," item="z">
+            (#{content.id}, #{z.id})
+        </foreach>
+    </insert>
+    
+    <insert id="addContentAttachs">
+        INSERT INTO r_content_attach VALUES
+        <foreach collection="attachs" separator="," item="a">
+            (#{content.id}, #{a.id})
+        </foreach>
+    </insert>
+    
+    <insert id="addContentCategorys">
+        INSERT INTO r_content_category VALUES
+        <foreach collection="categorys" separator="," item="c">
+            (#{c.id}, #{content.id})
+        </foreach>
+    </insert>
+    
+    
+    <delete id="deleteContentCategorys">
+        DELETE FROM r_content_category
+        WHERE content_id = #{content.id} AND category_id IN
+        <foreach collection="categorys" item="a" open="(" separator="," close=")">
+            #{a.id}
+        </foreach>
+    </delete>
+    
+    <delete id="deleteContentCategorysAll">
+        DELETE FROM r_content_category
+        WHERE content_id = #{id}
+    </delete>
+    
+    <delete id="deleteContentAttachs">
+        DELETE FROM r_content_attach
+        WHERE content_id = #{content.id} AND attach_id IN
+        <foreach collection="attachs" item="a" open="(" separator="," close=")">
+            #{a.id}
+        </foreach>
+    </delete>
+    
+    <delete id="deleteContentAttachsAll">
+        DELETE FROM r_content_attach
+        WHERE content_id = #{id}
+    </delete>
+    
+    <delete id="deleteContentZones">
+        DELETE FROM r_content_zone 
+        WHERE content_id = #{content.id} AND zone_id IN
+        <foreach collection="zones" item="z" open="(" separator="," close=")">
+            #{z.id}
+        </foreach>
+    </delete>
+    
+    <delete id="deleteContentZonesAll">
+        DELETE FROM r_content_zone 
+        WHERE content_id = #{id}
+    </delete>
+    
+    <delete id="deleteContentTags">
+        DELETE FROM r_content_tag 
+        WHERE content_id = #{content.id} AND tag_id IN
+        <foreach collection="tags" item="t" open="(" separator="," close=")">
+            #{t.id}
+        </foreach>;
+         UPDATE tag SET content_count = content_count - 1 WHERE id IN
+        <foreach collection="tags" separator="," item="t" close=")" open="(">
+            #{t.id}
+        </foreach>;
+    </delete>
+    
+    <delete id="deleteContents">
+        DELETE FROM content WHERE id IN
+        <foreach collection="contents" item="c" open="(" separator="," close=")">
+            #{c.id}
+        </foreach>
+    </delete>
+    
+    <update id="updateContent">
+        UPDATE content 
+        <set> 
+            <if test="title != null">title=#{title},</if> 
+            <if test="summary != null">summary = #{summary}, </if>
+            <if test="words != null">words=#{words}, </if>
+       </set>
+        WHERE id=#{id}
+    </update>
+    
+    <update id="updateContentByManage">
+        UPDATE content 
+        <set> 
+            <if test="title != null">title=#{title},</if> 
+            <if test="summary != null">summary = #{summary}, </if>
+            <if test="words != null">words=#{words}, </if>
+            <if test="state != null">state=#{state}, </if>
+       </set>
+        WHERE id=#{id}
+    </update>
+    
+</mapper>

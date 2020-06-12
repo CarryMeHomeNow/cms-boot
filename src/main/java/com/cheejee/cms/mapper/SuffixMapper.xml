@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cheejee.cms.dao.SuffixDAO">
+
+    <resultMap type="suffix" id="suffixMap">
+        <id column="id" property="id"/>
+        <collection property="types" column="id" ofType="type" select="com.cheejee.cms.dao.TypeDAO.selectTypeForSuffix"/>
+        <collection property="attachs" column="id" ofType="attach" select="com.cheejee.cms.dao.AttachDAO.selectAttachBySuffix"></collection>
+    </resultMap>
+    
+    <select id="selectSuffix" resultMap="suffixMap">
+        SELECT * FROM suffix WHERE id=#{id}
+    </select>
+    
+    <select id="listSuffix" resultMap="suffixMap">
+        SELECT * FROM suffix
+    </select>
+    
+    <select id="selectSuffixNoType" resultMap="suffixMap">
+        SELECT * FROM suffix 
+        WHERE id 
+        NOT IN
+        (SELECT suffix_id FROM r_suffix_type)
+    </select>
+    
+    <select id="selectSuffixForType" resultMap="suffixMap">
+        SELECT s.* FROM r_suffix_type r
+        JOIN suffix s
+        ON r.suffix_id = s.id
+        WHERE r.type_id = #{id}
+    </select>
+    
+    <select id="selectCountBySuffix" resultType="_int">
+        SELECT COUNT(*) FROM suffix
+        WHERE suffix=#{suffix}
+    </select>
+    
+    <select id="selectSuffixBySuff" resultMap="suffixMap">
+        SELECT * FROM suffix
+        WHERE suffix=#{suffix}
+    </select>
+    
+    
+    
+    <insert id="addSuffixs" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO suffix VALUES
+        <foreach collection="suffixs" item="s" separator=",">
+            (null, #{s.suffix}, #{s.describe})
+        </foreach>
+    </insert>
+    
+    <delete id="deleteSuffixs">
+        DELETE FROM suffix WHERE id IN
+        <foreach collection="suffixs" item="s" open="(" separator="," close=")">
+            #{s.id}
+        </foreach>
+    </delete>
+    
+    <update id="updateSuffix">
+        UPDATE suffix 
+        <set> 
+            <if test="suffix != null">suffix=#{suffix},</if> 
+            `describe`=#{describe} 
+        </set>
+        WHERE id=#{id}
+    </update>
+    
+</mapper>
