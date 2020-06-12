@@ -10,6 +10,7 @@ class CmsBootApplicationTests {
 	
 	@Test
 	void test() {
+		System.out.print("");
 	}
 
 	
