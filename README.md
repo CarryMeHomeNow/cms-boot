@@ -1,5 +1,5 @@
 
 # CMS-内容管理系统
 + 我的第一个项目。
-+ 基于ssm+springboot，因为是边学边做。所以前期用的ssm后期转成springboot项目。
++ 基于ssm+springboot.因为是边学边做,前期用的ssm后期转成springboot项目,可能整个项目结构看起来会很奇怪。
 + 对用户的内容进行管理，主要是用户编写的文章和上传的附件。
